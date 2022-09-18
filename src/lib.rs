@@ -1,4 +1,10 @@
+mod storage;
+mod commands;
+
+use std::error::Error;
 use clap::{Parser, Subcommand};
+
+use commands::building::build_command;
 
 #[derive(Parser)]
 pub struct Args {
@@ -7,10 +13,10 @@ pub struct Args {
 }
 
 #[derive(Subcommand)]
-enum ActionBranch {
-	Set {
+pub enum ActionBranch {
+	Env {
 		#[clap(subcommand)]
-		action: SetAction, 
+		action: EnvAction, 
 	},
 	File {
 		#[clap(subcommand)]
@@ -19,28 +25,41 @@ enum ActionBranch {
 }
 
 #[derive(Subcommand)]
-enum SetAction {
-	Create,
-	Delete,
-	Use
+pub enum EnvAction {
+	Import {
+		path: String, 
+		name: String,
+	},
+	Export {
+		path: String, 
+		name: String,
+	},
+	Create {
+		name: String,
+	},
+	Delete {
+		name: String,
+	},
+	Use {
+		name: String,
+	},
+	List {
+		name: String,
+	}
 }
 
 #[derive(Subcommand)]
-enum FileAction {
-	Add,
-	Remove,
+pub enum FileAction {
+	Add {
+		path: String,
+	},
+	Remove {
+		path: String,
+	},
 }
 
-pub fn manage(args: Args) {
-	match args.branch {
-		ActionBranch::Set { .. } => println!("Set commands"),
-		ActionBranch::File { action } => {
-			match action {
-				FileAction::Add => println!("add"),
-				_ => println!("other file action"),
-			}
-		}
-		_ => println!("other")
-	}
+pub fn manage_secrets(args: Args) -> Result<(), Box<dyn Error>> {
+	let mut command = build_command(args);
+	command.execute()
 }
 
